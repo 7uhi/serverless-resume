@@ -1,4 +1,4 @@
-name: Build and publish resume
+name: Check resume website
 on:
   push:
     branches: [main]
@@ -31,23 +31,3 @@ jobs:
           name: website
           path: dist/
           if-no-files-found: error
-  publish:
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && vars.AWS_DEPLOY_ROLE_ARN != ''
-    needs: build
-    runs-on: ubuntu-24.04
-    environment: production
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: website
-          path: dist/
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: us-east-2
-      - name: Publish website
-        run: python3 scripts/publish.py

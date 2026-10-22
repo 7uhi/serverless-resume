@@ -1,32 +1,33 @@
 # Yuhi Tanaka's cloud resume
 
-A static resume website for **yuhitanaka.com**, hosted on private Amazon S3 through
-CloudFront. Your uploaded PDF is displayed on desktop and offered as a download.
-An expandable text view, extracted from that same PDF, works on mobile and without a
-browser PDF viewer. Text extraction preserves the words, but not complex PDF layouts;
-review its reading order with your actual resume. No application server is needed.
+A static resume website for **yuhitanaka.com**, deployed from
+[7uhi/serverless-resume](https://github.com/7uhi/serverless-resume) with **AWS Amplify Hosting**
+in **us-east-2**. The PDF is displayed on desktop, downloadable on every device, and
+available as expandable text on mobile.
 
-## Current status
+## Update your resume
 
-The build scripts, site, AWS CDK infrastructure, and GitHub workflow are prepared.
-Your resume PDF is at `resume/Resume.pdf`. No AWS resources, IAM roles, certificates,
-or DNS records have been created. The site is not deployed.
+1. Edit your resume in Overleaf and download the finished PDF.
+2. Replace `resume/Resume.pdf` (capital R).
+3. Commit and push to `main`.
 
-## 1. Update your resume
+Once the repository is connected, Amplify builds and publishes automatically.
+The preview, download, and text view all use that same PDF. The public document
+URL stays `/resume.pdf`. No document compiler or AWS access keys are needed.
+`site.json` controls the input PDF path, display name, and introduction.
 
-1. Edit your resume in Overleaf (or your preferred editor) and download the finished PDF.
-2. Replace `resume/Resume.pdf` (capital R), keeping the filename unchanged.
-3. Commit and push to `main`. Once AWS publishing is configured, GitHub updates the site.
+## Hosting status
 
-The project only uses the finished PDF. It does not compile source files.
-The `pdf` field in `site.json` sets the input path. The public URL stays `/resume.pdf`.
-The `name` and `description` fields control the landing-page copy. The preview,
-download, and expandable text view all use the same PDF, so there is no second
-resume to maintain in HTML.
+The Amplify build configuration is prepared; hosting has not been created or verified.
+The previous S3/CDK deployment path was removed. GitHub Actions checks the build
+and saves a `website` artifact; Amplify handles publishing independently.
+An AWS-managed policy denied the identity-provider listing used by the original
+GitHub-to-AWS OIDC setup. This configuration instead uses Amplify's native GitHub
+connection. No paid-plan upgrade or advanced-features activation is proposed.
 
-## 2. Build locally
+## Preview locally
 
-Install Poppler for PDF text extraction. On macOS:
+The build requires Python 3 and Poppler's `pdftotext`. On macOS:
 
 ```sh
 brew install poppler
@@ -34,104 +35,102 @@ python3 scripts/build.py
 python3 -m http.server 8000 --directory dist --bind 127.0.0.1
 ```
 
-GitHub installs Poppler automatically. No Python packages or document compiler are required.
-Open http://localhost:8000. Check the original PDF, the download button, and the text
-view at desktop and mobile widths. PDF text extraction requires a text-based PDF,
-not a scanned image. Builds fail before publication if the PDF is missing, invalid,
-or has no extractable text.
+Open http://localhost:8000. Amplify and GitHub Actions install Poppler themselves.
+No npm dependencies are required. `npm run build` and `npm run preview` are optional
+shortcuts for the Python commands.
 
-## 3. Review and deploy AWS hosting
+`amplify.yml` installs Poppler using the default Amazon Linux build image, runs
+the Python build, and publishes only `dist/`. `customHttp.yml` sets security and
+cache headers. No PDF content is sent to a separate conversion service.
+The text view requires a text-based PDF; check reading order if the resume uses
+multiple columns. Missing, invalid, or textless PDFs stop the build.
 
-Regional resources belong in **us-east-2**, using the **student-aws** profile.
-Before running commands that create resources, review charges and explicitly approve
-deployment. CDK bootstrap and deployment also create or change permissions and need
-approval under your local AWS instructions.
+## Deployment cost and permissions review
 
-Hosting has usage-based S3 storage/request and CloudFront delivery charges. CDK
-bootstrap adds supporting storage. GitHub Actions may consume billable minutes and
-artifact storage depending on repository visibility and plan. No monthly estimate
-has been calculated yet; check current AWS pricing and your project's free/paid plan
-before deployment. A registered domain's renewal remains with Spaceship.
+AWS hosting creates usage charges, potentially covered by credits or applicable
+allowances. The last local preflight reported an active Free plan with $120 in
+remaining credits; verify the current balance in AWS Settings before deployment.
 
-After approval and AWS login:
+Published Amplify standard rates, before allowances/credits:
+
+| Usage | Rate |
+| --- | --- |
+| Standard build | $0.01 per build minute |
+| Stored site data | $0.023 per GB-month |
+| Data served | $0.15 per GB |
+| Public SSL certificate | No additional charge |
+
+An illustrative month with 20 build minutes, 1 GB served, and 0.005 GB stored is
+about **$0.35 before allowances/credits**. This is a usage estimate, not a spending
+cap. Higher traffic, more builds, or retained deployment data change the total.
+Domain renewal remains with Spaceship. Optional WAF and backend resources are not
+part of this configuration. GitHub Actions usage is billed separately under your
+GitHub plan if its included allowance is exceeded.
+
+The connection grants the official AWS Amplify GitHub App access to the selected
+repository. Select **Only select repositories → 7uhi/serverless-resume**.
+It allows Amplify to read the code and receive changes so it can build the site.
+No custom GitHub deployment role or long-lived AWS credentials are needed.
+
+Creating the app and granting GitHub access require approval under the local project
+instructions. Preparing these files has not created resources or changed permissions.
+
+## Connect Amplify after approval
+
+1. Commit and push the prepared configuration to `main`.
+2. Open the [Amplify console in Ohio](https://us-east-2.console.aws.amazon.com/amplify/apps?region=us-east-2)
+   for the project using profile `student-aws`.
+3. Choose to deploy a new app from GitHub. Authorize the official Amplify GitHub App
+   for only `7uhi/serverless-resume`, then choose branch `main`.
+4. Name the app `serverless-resume`. This is a static app with no backend.
+   Use the default Amazon Linux build image, the repository's `amplify.yml`,
+   build command `python3 scripts/build.py`, and output directory `dist`.
+   No environment variables are required. Leave optional WAF and backend features off.
+5. Review the settings, then deploy. Wait for a successful deployment and open the
+   generated `amplifyapp.com` address.
+6. Verify the homepage, embedded PDF, PDF download, mobile text view, and response
+   headers. The first cloud build is still needed to verify the build image setup.
+
+There is no infrastructure bootstrap or GitHub AWS deployment-role step.
+Future PDF pushes are published by Amplify independently of the GitHub build check;
+required PR checks can be used if you want builds reviewed before merging to `main`.
+
+## Connect yuhitanaka.com
+
+After the default URL works, open the app's **Hosting → Custom domains → Add domain**.
+Enter `yuhitanaka.com`, map the root domain to `main`, and use Amplify's managed
+certificate. If you also add `www`, choose whether it should redirect to the root.
+
+Keep the domain registered at Spaceship. Add the exact certificate-validation and
+traffic-routing records Amplify displays to your active DNS service. For the root
+domain, use the provider's supported apex ALIAS/ANAME mechanism; do not enter a
+standard root CNAME or hardcode CloudFront IP addresses. Inspect the DNS provider's
+available record types before changing records. Preserve existing email/MX/TXT records.
+Keep validation records for certificate renewal.
+
+Wait for Amplify's domain status to become available, then test HTTPS and PDF
+download at `https://yuhitanaka.com`. No DNS records have been changed yet.
+
+## Read-only AWS checks
 
 ```sh
-npm install
-AWS_PROFILE=student-aws npx cdk synth --strict
-# First-time CDK setup only; creates resources and IAM roles:
-AWS_PROFILE=student-aws npx cdk bootstrap --region us-east-2
-AWS_PROFILE=student-aws npx cdk diff
-AWS_PROFILE=student-aws npx cdk deploy --outputs-file .build/aws-outputs.json
-AWS_PROFILE=student-aws python3 scripts/publish.py
+python3 scripts/check_aws.py
 ```
 
-Commit the generated `package-lock.json`, then use `npm ci` on subsequent installs.
-The default deployment uses the CloudFront-generated HTTPS address. Public S3 access
-is blocked; CloudFront accesses objects using Origin Access Control. HTTP redirects
-to HTTPS. Caching is disabled initially so every update is visible without an
-invalidation step. Revisit caching if traffic grows. S3 objects are retained if the
-stack is removed; cleanup must be deliberate and separately approved.
+This uses `student-aws` and saves login, plan, and Amplify app inventory to
+`.build/aws-preflight.json`, which is ignored by Git. It creates no resources or
+permissions. Because the agent's network cannot reach AWS, run it in your normal
+Terminal when an inventory is needed. Its results include identifiers, not credentials.
 
-## 4. Connect yuhitanaka.com at Spaceship
+## Verification status
 
-CloudFront requires its ACM certificate in **us-east-1**. Your local project rules
-restrict regional resources to us-east-2. Do not create a certificate in us-east-1
-until that restriction is resolved. This project only imports an existing compatible
-certificate; it does not bypass the restriction with a second regional stack.
+- Python syntax checks pass, and the configured PDF exists with a PDF file header.
+- Local extraction and full build verification still need Poppler.
+- Amplify configuration follows AWS's documented build and header formats; the first
+  cloud build, public-domain checks, and visual review remain pending.
+- No AWS hosting app, GitHub authorization, or DNS changes have been performed.
 
-Once an issued certificate for `yuhitanaka.com` is available, review this update:
-
-```sh
-AWS_PROFILE=student-aws npx cdk diff -c domain=yuhitanaka.com -c certificateArn=YOUR_CERTIFICATE_ARN
-AWS_PROFILE=student-aws npx cdk deploy -c domain=yuhitanaka.com -c certificateArn=YOUR_CERTIFICATE_ARN
-```
-
-Use the same context arguments on subsequent infrastructure deployments. This
-configuration serves the apex domain only; add `www` explicitly to both the
-certificate and distribution if desired.
-
-At Spaceship, keep any existing email/MX/TXT records. Add the ACM validation CNAME
-records AWS provides, and leave them in place for renewal. After the distribution is
-deployed, point the apex domain at the stack's `DistributionDomain` output using your
-DNS provider's supported apex ALIAS/ANAME feature. A standard CNAME cannot be used
-at the apex. Confirm Spaceship's current capabilities before making the change.
-If the active DNS service cannot alias the apex to CloudFront, a Route 53 hosted zone
-and nameserver migration is an alternative; copy all existing DNS records first and
-review its charges. Do not hardcode CloudFront IP addresses. DNS changes are not
-automated here because your current DNS records have not been inspected.
-
-## 5. Enable push-to-publish on GitHub
-
-1. Create a repository and push this project with your resume to its `main` branch.
-2. The workflow builds the website from your PDF and saves a downloadable `website` artifact.
-   Pull requests build for review and cannot publish.
-3. After AWS deployment, create a narrowly scoped GitHub OIDC deployment role, with
-   explicit permission approval. Trust only your repository's `production` environment,
-   and restrict that GitHub environment to the `main` branch. Do not use AWS access keys.
-4. Give the role `cloudformation:DescribeStacks` on the CloudResume stack and
-   `s3:PutObject` on only these objects in its website bucket: `index.html`, `style.css`,
-   and `resume.pdf`. The publishing script requires no infrastructure-write permissions.
-5. Set repository variable `AWS_DEPLOY_ROLE_ARN` to that role's ARN. Configure production
-   environment protection according to how automatically you want updates published.
-
-Until this variable is set, builds work and publishing is skipped. Then your regular
-update is: replace `resume/Resume.pdf`, commit, push. The workflow extracts the
-text and publishes the PDF and website files. Failed builds leave the existing website untouched.
-Do not push sensitive documents: the uploaded resume and all included personal
-details will be public when published. Source code need not be in a public repository.
-
-## Verification
-
-- The configured input PDF exists and has a PDF file header.
-- Python syntax checks pass. Local extraction and a full build still require Poppler.
-- Review the PDF and the extracted text's reading order before publication.
-- Dependency installation was blocked by network DNS failure to registry.npmjs.org;
-  a lockfile and CDK synthesis are still pending.
-- The AWS plan check could not reach the AWS sign-in endpoint, so project status
-  has not been verified.
-- Confirm AWS plan, certificate availability, existing DNS records, and hosting cost.
-- Deploy with approval, then test HTTPS and PDF download from the public domain.
-
-References: [CloudFront S3 Origin Access Control](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudfront_origins-readme.html),
-[CloudFront custom domains](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/CreatingCNAME.html).
-# serverless-resume
+References: [Amplify pricing](https://aws.amazon.com/amplify/pricing/),
+[GitHub connection](https://docs.aws.amazon.com/amplify/latest/userguide/setting-up-GitHub-access.html),
+[Build specification](https://docs.aws.amazon.com/amplify/latest/userguide/yml-specification-syntax.html),
+[Custom domains](https://docs.aws.amazon.com/amplify/latest/userguide/to-add-a-custom-domain-managed-by-a-third-party-dns-provider.html).

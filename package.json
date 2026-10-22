@@ -4,16 +4,6 @@
   "private": true,
   "scripts": {
     "build": "python3 scripts/build.py",
-    "preview": "python3 -m http.server 8000 --directory dist --bind 127.0.0.1",
-    "synth": "cdk synth --strict",
-    "diff": "cdk diff",
-    "deploy:infra": "cdk deploy"
-  },
-  "dependencies": {
-    "aws-cdk-lib": "^2.220.0",
-    "constructs": "^10.4.2"
-  },
-  "devDependencies": {
-    "aws-cdk": "2.1030.0"
+    "preview": "python3 -m http.server 8000 --directory dist --bind 127.0.0.1"
   }
 }

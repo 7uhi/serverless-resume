@@ -1,0 +1,13 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - sudo yum install -y poppler-utils
+    build:
+      commands:
+        - python3 scripts/build.py
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
