@@ -8,6 +8,7 @@ customHeaders:
       - key: Strict-Transport-Security
         value: max-age=15552000
       - key: Content-Security-Policy
-        value: "default-src 'self'; style-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+        # This policy is also sent with resume.pdf, which the homepage embeds.
+        value: "default-src 'self'; style-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'"
       - key: Cache-Control
         value: no-cache
