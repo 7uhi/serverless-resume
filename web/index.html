@@ -4,25 +4,53 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{{DESCRIPTION}}">
-  <meta name="theme-color" content="#f5f4ef">
+  <meta name="theme-color" content="#faf9f6">
   <title>{{NAME}} — Resume</title>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <a class="skip" href="#resume">Skip to resume</a>
-  <header class="masthead"><a class="wordmark" href="/">{{NAME}}</a><span class="label">RESUME</span></header>
-  <main>
-    <section class="intro" aria-labelledby="title">
-      <div><p class="eyebrow">EXPERIENCE · EDUCATION · SELECTED WORK</p><h1 id="title">A little about<br>my work.</h1><p class="description">{{DESCRIPTION}}</p></div>
-      <a class="download" href="/resume.pdf" download="Yuhi-Tanaka-Resume.pdf">Download resume <span aria-hidden="true">↗</span><small>PDF DOCUMENT</small></a>
-    </section>
-    <section class="resume" id="resume" aria-labelledby="resume-heading">
-      <div class="document-bar"><h2 id="resume-heading">Curriculum vitae</h2><a href="/resume.pdf">Open PDF <span aria-hidden="true">↗</span></a></div>
-      <iframe class="pdf" src="/resume.pdf#view=FitH" title="Resume PDF"></iframe>
-      <details class="text-view"><summary>Read resume as text</summary><pre>{{RESUME_TEXT}}</pre></details>
-      <p class="mobile-note">On mobile, open or download the PDF above for the original layout, or expand the text view.</p>
-    </section>
-  </main>
-  <footer><span>{{NAME}}</span><span>Thank you for stopping by.</span></footer>
+  <a class="skip-link" href="#resume">Skip to resume</a>
+  <div class="page">
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="{{NAME}}, home">yt<span aria-hidden="true">.</span></a>
+      <a class="header-link" href="/resume.pdf" download="Yuhi-Tanaka-Resume.pdf">Download PDF <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="name">
+        <p class="eyebrow">PERSONAL RESUME</p>
+        <h1 id="name">{{NAME}}<span class="name-period" aria-hidden="true">.</span></h1>
+        <div class="intro-bottom">
+          <p class="description">{{DESCRIPTION}}</p>
+          <nav class="contact-links" aria-label="Find me online">
+            <a href="https://github.com/7uhi">GitHub <span aria-hidden="true">↗</span></a>
+            <a href="https://linkedin.com/in/yuhitanaka">LinkedIn <span aria-hidden="true">↗</span></a>
+          </nav>
+        </div>
+      </section>
+
+      <section class="resume-section" id="resume" aria-labelledby="resume-heading">
+        <div class="section-header">
+          <h2 id="resume-heading"><span class="section-number" aria-hidden="true">01</span> Resume</h2>
+          <a class="document-link" href="/resume.pdf">Open document <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="document">
+          <iframe class="pdf-viewer" src="/resume.pdf#toolbar=0&amp;navpanes=0&amp;view=FitH" title="{{NAME}}'s resume"></iframe>
+        </div>
+        <div class="reading-options">
+          <details class="text-view">
+            <summary>Read as text <span class="expand-icon" aria-hidden="true">+</span></summary>
+            <pre>{{RESUME_TEXT}}</pre>
+          </details>
+          <p class="mobile-note">For the original layout, <a href="/resume.pdf">open the PDF</a> or download a copy.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>{{NAME}}</span>
+      <a href="mailto:yuhi@engineering.upenn.edu">Get in touch <span aria-hidden="true">↗</span></a>
+    </footer>
+  </div>
 </body>
 </html>
